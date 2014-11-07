@@ -14,7 +14,7 @@ angular.module('backAnd.controllers')
             //this example adds a menu item to page1
             if (data && data.workspace && data.workspace.pages && data.workspace.pages.length > 1) {
                 //remove the automatic menu
-                data.workspace.pages.splice(1, 1);
+                data.workspace.pages.splice(1, 3);
                 // add the new one
                 data.workspace.pages.splice(1, 0, {name: "cohort1", partType: "dashboard"});
             }
