@@ -33,6 +33,12 @@ angular.module('backAnd', [
 //                    }
 //                }
             })
+            /********************************************************/
+            /* uncomment this route for the custom new page example */
+            /********************************************************/
+            .when('/cohort', {
+                templateUrl: 'themes/AdminLTE-master/my-pages/cohort/cohort.html'
+            })
 
             .when('/login', {
                 templateUrl: 'themes/AdminLTE-master/backand/partials/login/login.html'
@@ -66,12 +72,7 @@ angular.module('backAnd', [
                 templateUrl: 'themes/AdminLTE-master/backand/partials/custom/example.html'
             })
 
-            /********************************************************/
-            /* uncomment this route for the custom new page example */
-            /********************************************************/
-            //$routeProvider.when('/page1', {
-            //    templateUrl: 'themes/AdminLTE-master/my-pages/page1/page1.html'
-            //});
+
 
 
             .otherwise({
