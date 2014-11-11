@@ -1,0 +1,35 @@
+<section class="content-header">
+    <h1>
+        Cohort
+    </h1>
+    <ol class="breadcrumb">
+        <li data-ng-repeat="breadcrumb in breadcrumbs"><a href="#" ng-style="{'cursor':'default'}"><i class="fa custom-icon" icon-type="breadcrumb.partType"></i>{{breadcrumb.name}}</a></li>
+    </ol>
+</section>
+<section class="content" data-ng-controller="cohortController">
+    <div>Additional filter options:</div>
+    <div ng-show="showFilter" class="grid-filter">
+        <div bknd-filter filter-options="filterOptionsInput" show-operators="true"></div>
+    </div>
+
+
+    <!--<div class="panel panel-default">-->
+        <!--<div class="panel-body">-->
+            <!--<div class="row">-->
+                <!--<div class="col-md-2 form-group">-->
+                    <!--<label>Device:</label>-->
+                    <!--<div>-->
+                        <!--IOS <input type="checkbox" name="device" value=ios" class="form-control filter-item">-->
+                    <!--</div>-->
+                    <!--<div>-->
+                        <!--Android <input type="checkbox" name="device" value=android" class="form-control filter-item" />-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+    <br/>
+    <br/>
+    <bknd-dashboard dashboard-id="2" filter-options="filterOptions"></bknd-dashboard>
+
+</section>

@@ -340,7 +340,9 @@ backand.security.authentication.login('nir', 123456789, 'manager', function (dat
         success: function (data, textStatus, xhr) { if (successCallback) successCallback(data, textStatus, xhr); }
     });
 };var backandGlobal = {
-    url: "https://api.backand.com:8080",//
+    // url: "https://api.backand.com:8080",//
+    url: "http://api.backand.info:8099",//
+    //url: "http://www.yariv.info:4109",//
     defaultApp: null
 };
 
@@ -1776,7 +1778,7 @@ angular.module('backAnd.directives')
 		    scope.toQueryString = function (arr) {
 		        var parts = [];
 		        angular.forEach(arr, function (item) {
-		            parts.push(item.name + "=" + item.value);
+		            parts.push(item.fieldName + "=" + item.value);
 		        });
 		        return parts.join("&");
 		    }
@@ -1881,7 +1883,8 @@ angular.module('backAnd.directives')
     },
     replace: true,
     scope: {
-      chartId : '='
+        chartId : '=',
+        filterOptions: '='
     },
     link: function($scope, element) {
       dataItemService.read({
@@ -1943,7 +1946,8 @@ angular.module('backAnd.directives')
     },
     replace: true,
     scope: {
-      chartId : '='
+        chartId : '=',
+        filterOptions: '='
     },
     link: function($scope, element) {
       dataItemService.read({
@@ -2061,7 +2065,8 @@ angular.module('backAnd.directives')
     },
     replace: true,
     scope: {
-      chartId : '='
+        chartId : '=',
+        filterOptions: '='
     },
     link: function($scope, element) {
       dataItemService.read({
@@ -2125,7 +2130,8 @@ angular.module('backAnd.directives')
     },
     replace: true,
     scope: {
-      chartId : '='
+        chartId : '=',
+        filterOptions: '='
     },
     link: function($scope, element) {
       dataItemService.read({
@@ -2188,7 +2194,8 @@ angular.module('backAnd.directives')
     },
     replace: true,
     scope: {
-      chartId : '='
+        chartId : '=',
+        filterOptions: '='
     },
     link: function($scope, element) {
       dataItemService.read({
@@ -2251,7 +2258,8 @@ angular.module('backAnd.directives')
     },
     replace: true,
     scope: {
-      chartId : '='
+        chartId : '=',
+        filterOptions: '='
     },
     link: function($scope, element) {
       dataItemService.read({
