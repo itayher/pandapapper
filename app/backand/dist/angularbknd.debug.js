@@ -340,9 +340,10 @@ backand.security.authentication.login('nir', 123456789, 'manager', function (dat
         success: function (data, textStatus, xhr) { if (successCallback) successCallback(data, textStatus, xhr); }
     });
 };var backandGlobal = {
-    // url: "https://api.backand.com:8080",//
-    url: "http://api.backand.info:8099",//
-    //url: "http://www.yariv.info:4109",//
+     url: "https://api.backand.com:8080",//
+    //url: "http://api.backand.info:8099",//
+  // url: "http://www.yariv.info:4109",//
+ 
     defaultApp: null
 };
 
@@ -1583,6 +1584,8 @@ angular.module('backAnd.directives')
             scope.$watch('filterOptions', function () {
                 if (scope.filterOptions) {
                     scope.filterOptionsOutput = angular.copy(scope.filterOptions);
+                    if (scope.getFilter().length > 0)
+                        scope.$emit('onfilter', scope.getFilter(), scope);
                 }
             }, true);
 
@@ -1947,7 +1950,8 @@ angular.module('backAnd.directives')
     replace: true,
     scope: {
         chartId : '=',
-        filterOptions: '='
+        filterOptions: '=',
+        seriesColors:[]
     },
     link: function($scope, element) {
       dataItemService.read({
@@ -1973,7 +1977,7 @@ angular.module('backAnd.directives')
                         acc.push(row);
                         return acc;
                       }, []),
-                      lineColors: ['#3c8dbc'],
+                      lineColors: $scope.seriesColors ==[]?['#0db74a']:$scope.seriesColors,
                       parseTime: false,
                       xkey: 'a',
                       ykeys: axises.substr(0, data.Data.length).split(''),

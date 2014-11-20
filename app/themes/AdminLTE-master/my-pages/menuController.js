@@ -14,16 +14,16 @@ angular.module('backAnd.controllers')
             //this example adds a menu item to page1
             if (data && data.workspace && data.workspace.pages && data.workspace.pages.length > 1) {
                 //remove the automatic menu
-                data.workspace.pages.splice(1, 3);
+               data.workspace.pages.splice(1,1);
                 // add the new one
-                data.workspace.pages.splice(1, 0, {name: "cohort1", partType: "dashboard"});
+                data.workspace.pages.splice(1, 0, {name: "cohort", partType: "dashboard"});
             }
         })
 
         /*  Uncomment to see an example of how to navigate when menu item is selected  */
         $scope.$on('menuItemSelected', function (event, data) {
             /*  this example navigates to page1 see the routines at \themes\AdminLTE-master\backand\js\app.js */
-            if (data.name == 'cohort1')
+            if (data.name == 'cohort')
                 $location.path("/cohort");
         })
     }
