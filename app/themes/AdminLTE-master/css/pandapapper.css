@@ -1,0 +1,106 @@
+body{
+    color:#ffffff;
+     background: #333333;
+}
+
+.skin-blue .logo,.skin-blue .logo:hover {
+background-color: #333333;
+
+}
+
+.skin-blue .navbar {
+ background-color: #333333; 
+}
+.glyphicon .glyphicon-user
+{
+    color: #0db74a;
+}
+.skin-blue .left-side {
+    background-color: #333333; 
+}
+.content {
+     background-color: #333333; 
+}
+
+.skin-blue .right-side > .content-header
+{
+    background-color: #333333;
+  
+}
+.right-side > .content-header > .breadcrumb > li > a {
+    color: #0db74a;
+}
+.glyphicon {
+    color: #0db74a;
+}
+.skin-blue .user-panel > .image > img {
+    border: 0px   ; *
+}
+.skin-blue .user-panel > .info,
+.skin-blue .user-panel > .info > a {
+  color: #ffffff;
+}
+
+.sidebar .sidebar-menu > li > a > .fa,
+.sidebar .sidebar-menu > li > a > .glyphicon,
+.sidebar .sidebar-menu > li > a > .ion {
+  color: #0db74a;
+}
+
+.skin-blue .sidebar > .sidebar-menu > li {
+  border-top: 1px solid #4c4c4c;
+  border-bottom: 1px solid #4c4c4c;
+}
+
+.skin-blue .sidebar {
+    border-bottom: 0px;
+}
+
+ .skin-blue .sidebar-form .btn {
+border: 0px ;
+background-color: #333;
+color: #fff;
+}
+.skin-blue .sidebar-form {
+    border: 0px ;
+}
+.open > .dropdown-menu {
+    /*dropdown menu of workspaces*/
+}
+.panel-body{
+    background-color: #2e2e2e;
+}
+.grid-filter .panel {
+
+border: 0;
+}
+.grid-filter .panel .form-control {
+    background: #333;
+    border: 0px;
+    color: #fff;
+}
+.grid-filter .btn.btn-primary.selected
+{
+    background: #7b7b7b;  
+   color: #fff;
+   border: 1px solid #7b7b7b;
+}
+.grid-filter .btn
+{
+
+}
+.box{
+     background-color: #2e2e2e;
+     color: #fff;
+     border: 0px;
+}
+.box .box-header{
+    color: #fff;
+}
+
+.skin-blue .sidebar > .sidebar-menu > li > a{color: #fff;}
+.skin-blue .sidebar > .sidebar-menu > li > a:hover, .skin-blue .sidebar > .sidebar-menu > li.active > a
+{
+    background: #333;
+    color: #7b7b7b;
+}
