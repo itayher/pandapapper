@@ -339,11 +339,10 @@ backand.security.authentication.login('nir', 123456789, 'manager', function (dat
         error: function (xhr, textStatus, err) { if (xhr, textStatus, err) erroCallback(xhr, textStatus, err); },
         success: function (data, textStatus, xhr) { if (successCallback) successCallback(data, textStatus, xhr); }
     });
-};var backandGlobal = {
-     url: "https://api.backand.com:8080",//
-    //url: "http://api.backand.info:8099",//
-  // url: "http://www.yariv.info:4109",//
- 
+};var url ="https://api.backand.com:8080";
+try{url = myUrl} catch(err){}
+var backandGlobal = {
+    url: url,//
     defaultApp: null
 };
 
@@ -784,7 +783,9 @@ angular.module('backAnd.controllers')
                 }
             }
 
-
+            $scope.isGrid = function () {
+                return $location.path().indexOf('grid') != -1;
+            }
         }
 
 
@@ -912,7 +913,7 @@ angular.module('backAnd.controllers')
                         console.error(error_description, { data: data, status: status, headers: headers, config: config })
                     }
                     $scope.loginError = error_description;
-                    console.log(status)
+                    //console.log(status)
                     $scope.waiting = false;
                 });
 
@@ -1280,7 +1281,6 @@ angular.module('backAnd.directives')
                 };
 
                 scope.editSelected = function () {
-
                     if (!scope.isSingleRowSelected()) {
                         $window.alert(messages.pleaseSelectRow);
                         return;
@@ -1556,7 +1556,8 @@ angular.module('backAnd.directives')
                 scope.$apply(attrs.ngBlur);
             });
         };
-    });;'use strict';
+    });
+;'use strict';
 /**
 * @ngdoc overview
 * @name directive.bkndFilter
@@ -1584,8 +1585,6 @@ angular.module('backAnd.directives')
             scope.$watch('filterOptions', function () {
                 if (scope.filterOptions) {
                     scope.filterOptionsOutput = angular.copy(scope.filterOptions);
-                    if (scope.getFilter().length > 0)
-                        scope.$emit('onfilter', scope.getFilter(), scope);
                 }
             }, true);
 
@@ -1598,7 +1597,7 @@ angular.module('backAnd.directives')
             scope.getFilter = function () {
                 var filter = [];
                 angular.forEach(scope.filterOptionsOutput, function (option) {
-                    if (option.value) {
+                    if (option.value || option.operator == 'empty' || option.operator == 'notEmpty') {
                         filter.push({ "fieldName": option.fieldName, "operator": option.operator, "value": option.value });
                     }
                 });
@@ -1886,7 +1885,7 @@ angular.module('backAnd.directives')
     },
     replace: true,
     scope: {
-        chartId : '=',
+        chartId: '=',
         filterOptions: '='
     },
     link: function($scope, element) {
@@ -1949,9 +1948,8 @@ angular.module('backAnd.directives')
     },
     replace: true,
     scope: {
-        chartId : '=',
-        filterOptions: '=',
-        seriesColors:[]
+        chartId: '=',
+        filterOptions: '='
     },
     link: function($scope, element) {
       dataItemService.read({
@@ -1977,7 +1975,7 @@ angular.module('backAnd.directives')
                         acc.push(row);
                         return acc;
                       }, []),
-                      lineColors: $scope.seriesColors ==[]?['#0db74a']:$scope.seriesColors,
+                      lineColors: ['#3c8dbc'],
                       parseTime: false,
                       xkey: 'a',
                       ykeys: axises.substr(0, data.Data.length).split(''),
@@ -2069,7 +2067,7 @@ angular.module('backAnd.directives')
     },
     replace: true,
     scope: {
-        chartId : '=',
+        chartId: '=',
         filterOptions: '='
     },
     link: function($scope, element) {
@@ -2134,7 +2132,7 @@ angular.module('backAnd.directives')
     },
     replace: true,
     scope: {
-        chartId : '=',
+        chartId: '=',
         filterOptions: '='
     },
     link: function($scope, element) {
@@ -2198,7 +2196,7 @@ angular.module('backAnd.directives')
     },
     replace: true,
     scope: {
-        chartId : '=',
+        chartId: '=',
         filterOptions: '='
     },
     link: function($scope, element) {
@@ -2262,7 +2260,7 @@ angular.module('backAnd.directives')
     },
     replace: true,
     scope: {
-        chartId : '=',
+        chartId: '=',
         filterOptions: '='
     },
     link: function($scope, element) {
@@ -2316,6 +2314,7 @@ angular.module('backAnd.directives')
 angular.module('backAnd.directives')
     .directive('bkndForm', ['$sce','$q','$location','$route','configService','dataItemService','dataListService','$log','Global',
         function ($sce, $q, $location, $route, configService, dataItemService, dataListService, $log, Global) {
+
     /**
     * @ngdoc directive
     * @name directive.bkndForm
@@ -3294,7 +3293,6 @@ angular.module('backAnd.directives')
     	    };
     	}],
     	link: function(scope) {
-    	    console.log("autocomplete.js", scope);
 
     	}
     }
@@ -3611,7 +3609,7 @@ angular.module('backAnd.directives')
     	},
     	templateUrl: 'backand/js/directives/numeric/partials/numeric.html',
     	link: function(scope) {
-            $log.debug("numeric scope", scope);
+            //$log.debug("numeric scope", scope);
     		if (!scope.value.val){
 	          scope.value.val = scope.field.defaultValue;
 	        };
@@ -3640,7 +3638,8 @@ angular.module('backAnd.directives')
         },
         templateUrl: 'backand/js/directives/grids/partials/disabledGrid.html'
     }
-}]);;'use strict';
+}]);
+;'use strict';
 /**
 * @ngdoc overview
 * @name directive.image
@@ -4030,7 +4029,7 @@ angular.module('backAnd.directives')
     "\n" +
     "                <div class=\"=col-md-10 text-left\">\r" +
     "\n" +
-    "                    <alert ng-repeat=\"alert in alerts\" type=\"{{alert.type}}\" close=\"closeAlert($index)\"><span ng-bind-html=\"alert.msg\"></span></alert>\r" +
+    "                    <alert ng-repeat=\"alert in alerts\" type=\"{{alert.type}}\" close=\"closeAlert($index)\"><span>{{alert.msg}}</span></alert>\r" +
     "\n" +
     "                </div>\r" +
     "\n" +
@@ -4104,7 +4103,8 @@ angular.module('backAnd.directives')
     "\n" +
     "    </div>\r" +
     "\n" +
-    "</script>"
+    "</script>\r" +
+    "\n"
   );
 
 
@@ -4155,7 +4155,15 @@ angular.module('backAnd.directives')
     "\n" +
     "                                <input ng-switch-when=\"numeric\" type=\"number\" name=\"item.fieldName\" value=\"item.value\" ng-model=\"item.value\" ng-change=\"filterChanged()\" class=\"form-control filter-item\" />\r" +
     "\n" +
-    "                                <input ng-switch-when=\"boolean\" type=\"checkbox\" name=\"item.fieldName\" value=\"item.value\" ng-model=\"item.value\" ng-change=\"filterChanged()\" class=\"form-control filter-item\" />\r" +
+    "                                <select ng-switch-when=\"boolean\" name=\"item.fieldName\" ng-model=\"item.value\" ng-change=\"filterChanged()\" class=\"form-control filter-item\">\r" +
+    "\n" +
+    "                                    <option value=\"\">All</option>\r" +
+    "\n" +
+    "                                    <option value=\"true\">Yes</option>\r" +
+    "\n" +
+    "                                    <option value=\"false\">No</option>\r" +
+    "\n" +
+    "                                </select>\r" +
     "\n" +
     "                                <select ng-switch-when=\"relation\" name=\"item.fieldName\" ng-model=\"item.value\" ng-change=\"filterChanged()\" class=\"form-control filter-item\">\r" +
     "\n" +
@@ -4173,13 +4181,13 @@ angular.module('backAnd.directives')
     "\n" +
     "                            <div class=\"btn-group\" dropdown ng-show=\"showOperators && item.fieldType != 'relation' && item.fieldType != 'boolean'\">\r" +
     "\n" +
-    "                                <button type=\"button\" class=\"btn btn-primary dropdown-toggle\" ng-class=\"item.value != undefined && item.value != '' && item.value != null ? 'selected' : ''\" ng-disabled=\"disabled\">\r" +
+    "                                <button type=\"button\" class=\"btn btn-primary dropdown-toggle\" ng-class=\"(item.value != undefined && item.value != '' && item.value != null) || item.operator == 'empty' || item.operator == 'notEmpty' ? 'selected' : ''\" ng-disabled=\"disabled\">\r" +
     "\n" +
     "                                    <span>\r" +
     "\n" +
     "                                        {{\r" +
     "\n" +
-    "                                            getOperatorSymbol(item.operator)\r" +
+    "                                        getOperatorSymbol(item.operator)\r" +
     "\n" +
     "                                        }}\r" +
     "\n" +
@@ -4287,25 +4295,42 @@ angular.module('backAnd.directives')
   $templateCache.put('backand/js/directives/grids/partials/grid-mobile.html',
     "<div class=\"ng-back-grid box\" id=\"bknd-grid_{{viewNameId}}\">\r" +
     "\n" +
-    "    <div class=\"btn-group btn-group-sm\" ng-show=\"showToolbar\">\r" +
+    "    <div class=\"box-body table-responsive\">\r" +
     "\n" +
-    "        <button type=\"button\" ng-click=\"addRow()\" ng-show=\"showAdd\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-plus\"></span></button>\r" +
+    "        <div class=\"btn-group btn-group-sm\" ng-show=\"showToolbar\">\r" +
     "\n" +
-    "        <button type=\"button\" ng-click=\"editSelected()\" ng-show=\"showEdit\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-pencil\"></span></button>\r" +
+    "            <button type=\"button\" ng-click=\"addRow()\" ng-show=\"showAdd\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-plus\"></span></button>\r" +
     "\n" +
-    "        <button type=\"button\" ng-click=\"deleteSelected()\" ng-show=\"showDelete\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-trash\"></span></button>\r" +
+    "            <button type=\"button\" ng-click=\"editSelected()\" ng-show=\"showEdit\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-pencil\"></span></button>\r" +
+    "\n" +
+    "            <button type=\"button\" ng-click=\"deleteSelected()\" ng-show=\"showDelete\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-trash\"></span></button>\r" +
+    "\n" +
+    "        </div>\r" +
+    "\n" +
+    "        <div class=\"btn-group btn-group-sm\">\r" +
+    "\n" +
+    "            <button type=\"button\" ng-click=\"activateFilter()\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-refresh\"></span></button>\r" +
+    "\n" +
+    "            <img ng-show=\"isLoad\" src=\"backand/img/ajax-loader.gif\" style=\"height:30px;margin-top:8px;\" />\r" +
+    "\n" +
+    "        </div>\r" +
+    "\n" +
+    "        <div class=\"btn-group-sm pull-right\">\r" +
+    "\n" +
+    "            <button type=\"button\" ng-click=\"collapseFilter=!collapseFilter\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon \" ng-class=\"collapseFilter ? 'glyphicon-chevron-down' : 'glyphicon-chevron-up'\"><span class=\"grid-toolbar-text\">{{collapseFilter ? \"Filter\" : \"Filter\"}}</span></span></button>\r" +
+    "\n" +
+    "        </div>\r" +
     "\n" +
     "    </div>\r" +
     "\n" +
-    "    <div class=\"btn-group btn-group-sm\">\r" +
+    "    <div ng-show=\"showFilter && !collapseFilter\" class=\"grid-filter\">\r" +
     "\n" +
-    "        <button type=\"button\" ng-click=\"activateFilter()\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-refresh\"></span></button>\r" +
-    "\n" +
-    "        <img ng-show=\"isLoad\" src=\"backand/img/ajax-loader.gif\" style=\"height:30px;margin-top:8px;\" />\r" +
+    "        <div bknd-filter filter-options=\"filterToolbarOptions\" show-operators=\"true\"></div>\r" +
     "\n" +
     "    </div>\r" +
     "\n" +
-    "</div>"
+    "</div>\r" +
+    "\n"
   );
 
 

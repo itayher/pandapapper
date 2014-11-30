@@ -4,7 +4,7 @@
 /** To customize the grid use this controller **/
 /***********************************************/
 angular.module('backAnd.controllers')
-    .controller('cohortController', ['$scope', 'dataListService','$q', function ($scope, dataListService,$q) {
+    .controller('mainDashboardController', ['$scope', 'dataListService','$q', function ($scope, dataListService,$q) {
 
         // input: json from rest api
         // output: name value array
@@ -38,11 +38,11 @@ angular.module('backAnd.controllers')
 
         $q.all([countryOptions.promise]).then(function (data) {
             $scope.filterOptionsInput = [{ "fieldName": "platform", "label": "Devices", "fieldType": "relation", "operator": "in", "value": "All", "selectOptions": [{ "name": "All", "value": "All" }, { "name": "IOS", "value": "%IOS%" }, { "name": "Android", "value": "%Android%" }
-        ]
+        , { "name": "(Empty)", "value": "[null]"}]
             }
        , { "fieldName": "country", "label": "Country", "fieldType": "relation", "operator": "in", "value": "All", "selectOptions":getCountriesOption(data[0])  }//
         ];
-           // $scope.processForm(data[0], data[1]);
+           
         });
 
 

@@ -1,12 +1,12 @@
 <section class="content-header">
     <h1>
-        Cohort
+        Main Dashboard
     </h1>
     <ol class="breadcrumb">
         <li data-ng-repeat="breadcrumb in breadcrumbs"><a href="#" ng-style="{'cursor':'default'}"><i class="fa custom-icon" icon-type="breadcrumb.partType"></i>{{breadcrumb.name}}</a></li>
     </ol>
 </section>
-<section class="content" data-ng-controller="cohortController">
+<section class="content" data-ng-controller="mainDashboardController">
     <div>Additional filter options:</div>
     <div ng-show="showFilter" class="grid-filter">
         <div bknd-filter filter-options="filterOptionsInput" show-operators="false"></div>
@@ -30,6 +30,6 @@
     <!--</div>-->
     <br/>
     <br/>
-    <bknd-dashboard dashboard-id="2" filter-options="filterOptions" ></bknd-dashboard>
+    <bknd-dashboard dashboard-id="1" filter-options="filterOptions" ></bknd-dashboard>
 
 </section>

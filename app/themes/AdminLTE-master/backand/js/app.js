@@ -36,6 +36,10 @@ angular.module('backAnd', [
             /********************************************************/
             /* uncomment this route for the custom new page example */
             /********************************************************/
+             .when('/mainDashboard', {
+                 templateUrl: 'themes/AdminLTE-master/my-pages/mainDashboard/mainDashboard.html'
+             })
+
             .when('/cohort', {
                 templateUrl: 'themes/AdminLTE-master/my-pages/cohort/cohort.html'
             })
