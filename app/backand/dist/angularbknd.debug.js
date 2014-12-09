@@ -339,11 +339,11 @@ backand.security.authentication.login('nir', 123456789, 'manager', function (dat
         error: function (xhr, textStatus, err) { if (xhr, textStatus, err) erroCallback(xhr, textStatus, err); },
         success: function (data, textStatus, xhr) { if (successCallback) successCallback(data, textStatus, xhr); }
     });
-};var url ="https://api.backand.com:8080";
-try{url = myUrl} catch(err){}
-var backandGlobal = {
-    url: url,//
-    defaultApp: null
+};var backandGlobal = {
+    url: "https://api.backand.com:8080"// 
+    //url:"http://api.backand.info:8099"
+    //url:"http://backand-dev3.cloudapp.net:4109/"
+    ,defaultApp: null
 };
 
 //load the backand banner
@@ -783,9 +783,7 @@ angular.module('backAnd.controllers')
                 }
             }
 
-            $scope.isGrid = function () {
-                return $location.path().indexOf('grid') != -1;
-            }
+
         }
 
 
@@ -913,7 +911,7 @@ angular.module('backAnd.controllers')
                         console.error(error_description, { data: data, status: status, headers: headers, config: config })
                     }
                     $scope.loginError = error_description;
-                    //console.log(status)
+                    console.log(status)
                     $scope.waiting = false;
                 });
 
@@ -1281,6 +1279,7 @@ angular.module('backAnd.directives')
                 };
 
                 scope.editSelected = function () {
+
                     if (!scope.isSingleRowSelected()) {
                         $window.alert(messages.pleaseSelectRow);
                         return;
@@ -1556,8 +1555,7 @@ angular.module('backAnd.directives')
                 scope.$apply(attrs.ngBlur);
             });
         };
-    });
-;'use strict';
+    });;'use strict';
 /**
 * @ngdoc overview
 * @name directive.bkndFilter
@@ -1585,6 +1583,9 @@ angular.module('backAnd.directives')
             scope.$watch('filterOptions', function () {
                 if (scope.filterOptions) {
                     scope.filterOptionsOutput = angular.copy(scope.filterOptions);
+                    // if there are default values then emit the filter in the first time
+                    if (scope.getFilter().length > 0)
+                        scope.$emit('onfilter', scope.getFilter(), scope);
                 }
             }, true);
 
@@ -1730,7 +1731,8 @@ angular.module('backAnd.directives')
 		replace: false,
 		scope: {
 			dashboardId : '=',
-		    filterOptions : '='
+			filterOptions: '=',
+            colorsOptions: '='
 	    },
 	    /**
         * @name link
@@ -1805,6 +1807,40 @@ angular.module('backAnd.directives')
 		        });
 
 		    }
+
+            scope.getColorOptions = function (chartType) {
+		        var colorsOptions = null;
+		        if (scope.colorsOptions) {
+		            switch (chartType) {
+		                case 'Line':
+		                    colorsOptions = scope.colorsOptions.line;
+		                    break;
+		                case 'Bar':
+		                    colorsOptions = scope.colorsOptions.bar;
+		                    break;
+		                case 'Column':
+		                    colorsOptions = scope.colorsOptions.column;
+		                    break;
+		                case 'Area':
+		                    colorsOptions = scope.colorsOptions.area;
+		                    break;
+		                case 'spline':
+		                    colorsOptions = scope.colorsOptions.spline;
+		                    break;
+		                case 'bubble':
+		                    colorsOptions = scope.colorsOptions.bubble;
+		                    break;
+		                case 'Pie':
+		                    colorsOptions = scope.colorsOptions.donut;
+		                    break;
+
+		                default:
+		                    break;
+		            }
+		        }
+
+		        return colorsOptions;
+		    }
 		}
 	}
 }]);
@@ -1869,64 +1905,86 @@ angular.module('backAnd.directives')
 * @ngdoc overview
 * @name directive.columnchart
 */
-.directive('columnchart',[ 'dataItemService',
+.directive('columnchart', ['dataItemService',
         function (dataItemService) {
-    /**
-    * @ngdoc directive
-    * @name directive.columnchart
-    * @description display a morris bar chart which is a column chart
-    * @param {string} chartId, required, the id of the chart
-    * @returns {object} directive
-    */
-  return {
-    restrict: 'E',
-    templateUrl: function (elem, attrs) {
-        return attrs.templateUrl || 'backand/js/directives/charts/partials/chart.html'
-    },
-    replace: true,
-    scope: {
-        chartId: '=',
-        filterOptions: '='
-    },
-    link: function($scope, element) {
-      dataItemService.read({
-                    // Need to change this to handle multiple tables on the same page
-                      dataType: "chart",
-                      id: $scope.chartId,
-                      qs: $scope.filterOptions
-                  }, function(data) {
-                    $scope.title = data.Title;
-                    $scope.subTitle = data.SubTitle;
-                    $scope.xTitle = data.XTitle;
-                    $scope.yTitle = data.YTitle;
-                    var axises = 'bcdefghijklmnopqrstuvwxyz'; 
-                    var opt = {
-                      element: element.find('.chart'),
-                      data: data.xAxis.reduce(function(acc, el, idx) {
-                        var row = {a: el};
+            /**
+            * @ngdoc directive
+            * @name directive.columnchart
+            * @description display a morris bar chart which is a column chart
+            * @param {string} chartId, required, the id of the chart
+            * @returns {object} directive
+            */
+            return {
+                restrict: 'E',
+                templateUrl: function (elem, attrs) {
+                    return attrs.templateUrl || 'backand/js/directives/charts/partials/chart.html'
+                },
+                replace: true,
+                scope: {
+                    chartId: '=',
+                    filterOptions: '=',
+                    colorsOptions: '=',
+                    dashboardScope: '='
 
-                        for (var i=0; i < data.Data.length; i++) {
-                          row[axises.charAt(i)] = data.Data[i].data[idx];
+                },
+                link: function ($scope, element) {
+                    $scope.load = function ($scope, element) {
+                        dataItemService.read({
+                            // Need to change this to handle multiple tables on the same page
+                            dataType: "chart",
+                            id: $scope.chartId,
+                            qs: $scope.filterOptions
+                        }, function (data) {
+                            // fire an event before loading chart after data was loaded
+                            $scope.$emit('onStartChartLoad', $scope, data);
+                            $scope.title = data.Title;
+                            $scope.subTitle = data.SubTitle;
+                            $scope.xTitle = data.XTitle;
+                            $scope.yTitle = data.YTitle;
+                            var axises = 'bcdefghijklmnopqrstuvwxyz';
+                            var opt = {
+                                element: element.find('.chart'),
+                                data: data.xAxis.reduce(function (acc, el, idx) {
+                                    var row = { a: el };
+
+                                    for (var i = 0; i < data.Data.length; i++) {
+                                        row[axises.charAt(i)] = data.Data[i].data[idx];
+                                    }
+                                    acc.push(row);
+                                    return acc;
+                                }, []),
+                                barColors: $scope.colorsOptions ? $scope.colorsOptions : ['#00a65a', '#f56954'],
+                                xkey: 'a',
+                                ykeys: axises.substr(0, data.Data.length).split(''),
+                                labels: data.Data.map(function (el) {
+                                    return el.name
+                                }),
+                                hideHover: 'auto',
+                                xLabelAngle: 45
+                            };
+                            // fire an event after loading chart
+                            $scope.$emit('onBeforeChartLoad', $scope, data, opt);
+                            if (!$scope.chart)
+                                $scope.chart = Morris.Bar(opt);
+                            else {
+                                $scope.chart.setData(opt.data);
+                            }
+                            // fire an event after loading chart
+                            $scope.$emit('onAfterChartLoad', $scope, data, opt);
+
+                        });
+                    }
+                    $scope.$watch('filterOptions', function (newVal, oldVal) {
+                        if ($scope.filterOptions && newVal != oldVal) {
+                            $scope.load($scope, element);
+
                         }
-                        acc.push(row);
-                        return acc;
-                      }, []),
-                      barColors: ['#00a65a', '#f56954'],
-                      xkey: 'a',
-                      ykeys: axises.substr(0, data.Data.length).split(''),
-                      labels: data.Data.map(function(el){
-                        return el.name
-                      }),
-                      hideHover: 'auto',
-                      xLabelAngle: 45
-                    };
-                    Morris.Bar(opt);
+                    }, true);
 
-                  });
-
-}
-}
-}])
+                    $scope.load($scope, element);
+                }
+            }
+        }])
 
 /**
 * @ngdoc overview
@@ -1934,63 +1992,91 @@ angular.module('backAnd.directives')
 */
 .directive('linechart', ['dataItemService',
         function (dataItemService) {
-    /**
-    * @ngdoc directive
-    * @name directive.linechart
-    * @description display a morris line chart
-    * @param {string} chartId, required, the id of the chart
-    * @returns {object} directive
-    */
-  return {
-    restrict: 'E',
-    templateUrl: function (elem, attrs) {
-        return attrs.templateUrl || 'backand/js/directives/charts/partials/chart.html'
-    },
-    replace: true,
-    scope: {
-        chartId: '=',
-        filterOptions: '='
-    },
-    link: function($scope, element) {
-      dataItemService.read({
-                    // Need to change this to handle multiple tables on the same page
-                      dataType: "chart",
-                      id: $scope.chartId,
-                      qs: $scope.filterOptions
-                  }, function(data) {
-                    $scope.title = data.Title;
-                    $scope.subTitle = data.SubTitle;
-                    $scope.xTitle = data.XTitle;
-                    $scope.yTitle = data.YTitle;
-                    var axises = 'bcdefghijklmnopqrstuvwxyz';
+            /**
+            * @ngdoc directive
+            * @name directive.linechart
+            * @description display a morris line chart
+            * @param {string} chartId, required, the id of the chart
+            * @returns {object} directive
+            */
+            return {
+                restrict: 'E',
+                templateUrl: function (elem, attrs) {
+                    return attrs.templateUrl || 'backand/js/directives/charts/partials/chart.html'
+                },
+                replace: true,
+                scope: {
+                    chartId: '=',
+                    filterOptions: '=',
+                    colorsOptions: '=',
+                    dashboardScope: '='
 
-                    var opt = {
-                      element: element.find('.chart'),
-                      data: data.xAxis.reduce(function(acc, el, idx) {
-                        var row = {a: el};
+                },
+                link: function ($scope, element) {
 
-                        for (var i=0; i < data.Data.length; i++) {
-                          row[axises.charAt(i)] = data.Data[i].data[idx];
+                    $scope.load = function ($scope, element) {
+                        dataItemService.read({
+                            // Need to change this to handle multiple tables on the same page
+                            dataType: "chart",
+                            id: $scope.chartId,
+                            qs: $scope.filterOptions
+                        }, function (data) {
+                            // fire an event before loading chart after data was loaded
+                            $scope.$emit('onStartChartLoad', $scope, data);
+                            $scope.title = data.Title;
+                            $scope.subTitle = data.SubTitle;
+                            $scope.xTitle = data.XTitle;
+                            $scope.yTitle = data.YTitle;
+                            var axises = 'bcdefghijklmnopqrstuvwxyz';
+
+                            var opt = {
+                                element: element.find('.chart'),
+                                data: data.xAxis.reduce(function (acc, el, idx) {
+                                    var row = { a: el };
+
+                                    for (var i = 0; i < data.Data.length; i++) {
+                                        row[axises.charAt(i)] = data.Data[i].data[idx];
+                                    }
+                                    acc.push(row);
+                                    return acc;
+                                }, []),
+                                lineColors: $scope.colorsOptions ? $scope.colorsOptions : ['#3c8dbc'],
+                                parseTime: false,
+                                xkey: 'a',
+                                ykeys: axises.substr(0, data.Data.length).split(''),
+                                labels: data.Data.map(function (el) {
+                                    return el.name
+                                }),
+                                hideHover: 'auto',
+                                xLabelAngle: 45
+                            };
+
+                            // fire an event after loading chart
+                            $scope.$emit('onBeforeChartLoad', $scope, data, opt);
+                            if (!$scope.chart)
+                                $scope.chart = Morris.Line(opt);
+                            else {
+                                $scope.chart.setData(opt.data);
+                            }
+                            // fire an event after loading chart
+                            $scope.$emit('onAfterChartLoad', $scope, data, opt);
+
+                        });
+                    }
+
+                    $scope.$watch('filterOptions', function (newVal, oldVal) {
+                        if ($scope.filterOptions && newVal != oldVal) {
+                            $scope.load($scope, element);
+
                         }
-                        acc.push(row);
-                        return acc;
-                      }, []),
-                      lineColors: ['#3c8dbc'],
-                      parseTime: false,
-                      xkey: 'a',
-                      ykeys: axises.substr(0, data.Data.length).split(''),
-                      labels: data.Data.map(function(el){
-                        return el.name
-                      }),
-                      hideHover: 'auto',
-                      xLabelAngle: 45
-                    };
-                    Morris.Line(opt);
-                  });
+                    }, true);
 
-}
-}
-}])
+                    $scope.load($scope, element);
+
+
+                }
+            }
+        }])
 
 /**
 * @ngdoc overview
@@ -1998,119 +2084,167 @@ angular.module('backAnd.directives')
 */
 .directive('donutchart', ['dataItemService',
         function (dataItemService) {
-    /**
-    * @ngdoc directive
-    * @name directive.donutchart
-    * @description display a morris donut chart
-    * @param {string} chartId, required, the id of the chart
-    * @returns {object} directive
-    */
-  return {
-    restrict: 'E',
-    templateUrl: function (elem, attrs) {
-        return attrs.templateUrl || 'backand/js/directives/charts/partials/donutchart.html'
-    },
-    replace: true,
-    scope: {
-        chartId : '=',
-        filterOptions : '='
-    },
-    link: function($scope, element) {
-        dataItemService.read({
-                    // Need to change this to handle multiple tables on the same page
-                    dataType: "chart",
-                    id: $scope.chartId,
-                    qs: $scope.filterOptions
-                  }, function(data) {
-                    $scope.title = data.Title;
-                    $scope.subTitle = data.SubTitle;
-                    var total = 0;
-                    data.Data[0].data.forEach(function (el) {
-                      total = total + el[1];
-                    });
-                    var opt = {
-                      element : element.find('.chart'),
-                      data : data.Data[0].data.map(function(el) {
-                        return {
-                          label : el[0],
-                          value : parseFloat((el[1] / total * 100).toFixed(2))
+            /**
+            * @ngdoc directive
+            * @name directive.donutchart
+            * @description display a morris donut chart
+            * @param {string} chartId, required, the id of the chart
+            * @returns {object} directive
+            */
+            return {
+                restrict: 'E',
+                templateUrl: function (elem, attrs) {
+                    return attrs.templateUrl || 'backand/js/directives/charts/partials/donutchart.html'
+                },
+                replace: true,
+                scope: {
+                    chartId: '=',
+                    filterOptions: '=',
+                    colorsOptions: '=',
+                    dashboardScope: '='
+
+                },
+                link: function ($scope, element) {
+                    $scope.load = function ($scope, element) {
+                        dataItemService.read({
+                            // Need to change this to handle multiple tables on the same page
+                            dataType: "chart",
+                            id: $scope.chartId,
+                            qs: $scope.filterOptions
+                        }, function (data) {
+                            // fire an event before loading chart after data was loaded
+                            $scope.$emit('onStartChartLoad', $scope, data);
+                            $scope.title = data.Title;
+                            $scope.subTitle = data.SubTitle;
+                            var total = 0;
+                            data.Data[0].data.forEach(function (el) {
+                                total = total + el[1];
+                            });
+                            var opt = {
+                                element: element.find('.chart'),
+                                data: data.Data[0].data.map(function (el) {
+                                    return {
+                                        label: el[0],
+                                        value: parseFloat((el[1] / total * 100).toFixed(2))
+                                    }
+                                }),
+                                colors: $scope.colorsOptions ? $scope.colorsOptions : ["#3c8dbc", "#f56954", "#00a65a"],
+                                hideHover: 'auto'
+                            };
+
+                            // fire an event after loading chart
+                            $scope.$emit('onBeforeChartLoad', $scope, data, opt);
+                            if (!$scope.chart)
+                                $scope.chart = Morris.Donut(opt);
+                            else {
+                                $scope.chart.setData(opt.data);
+                            }
+                            // fire an event after loading chart
+                            $scope.$emit('onAfterChartLoad', $scope, data, opt);
+
+                        });
+
+
+                    }
+                    $scope.$watch('filterOptions', function (newVal, oldVal) {
+                        if ($scope.filterOptions && newVal != oldVal) {
+                            $scope.load($scope, element);
+
                         }
-                      }),
-                      colors : ["#3c8dbc", "#f56954", "#00a65a"],
-                      hideHover : 'auto'
-                    };
+                    }, true);
 
-                    Morris.Donut(opt);
-                  });
+                    $scope.load($scope, element);
+                }
+            }
+        }])
 
-    }
-  }
-}])
-
-/**
-* @ngdoc overview
-* @name directive.barchart
-*/
+            /**
+            * @ngdoc overview
+            * @name directive.barchart
+            */
 .directive('barchart', ['dataItemService',
         function (dataItemService) {
-    /**
-    * @ngdoc directive
-    * @name directive.barchart
-    * @description display a morris bar chart
-    * @param {string} chartId, required, the id of the chart
-    * @returns {object} directive
-    */
-  return {
-    restrict: 'E',
-    templateUrl: function (elem, attrs) {
-        return attrs.templateUrl || 'backand/js/directives/charts/partials/chart.html'
-    },
-    replace: true,
-    scope: {
-        chartId: '=',
-        filterOptions: '='
-    },
-    link: function($scope, element) {
-      dataItemService.read({
-                    // Need to change this to handle multiple tables on the same page
-                      dataType: "chart",
-                      id: $scope.chartId,
-                      qs: $scope.filterOptions
-                  }, function(data) {
-                    $scope.title = data.Title;
-                    $scope.subTitle = data.SubTitle;
-                    $scope.xTitle = data.XTitle;
-                    $scope.yTitle = data.YTitle;
-                    var axises = 'bcdefghijklmnopqrstuvwxyz'; 
-                    var opt = {
-                      element: element.find('.chart'),
-                      data: data.xAxis.reduce(function(acc, el, idx) {
-                        var row = {a: el};
+            /**
+            * @ngdoc directive
+            * @name directive.barchart
+            * @description display a morris bar chart
+            * @param {string} chartId, required, the id of the chart
+            * @returns {object} directive
+            */
+            return {
+                restrict: 'E',
+                templateUrl: function (elem, attrs) {
+                    return attrs.templateUrl || 'backand/js/directives/charts/partials/chart.html'
+                },
+                replace: true,
+                scope: {
+                    chartId: '=',
+                    filterOptions: '=',
+                    colorsOptions: '=',
+                    dashboardScope: '='
 
-                        for (var i=0; i < data.Data.length; i++) {
-                          row[axises.charAt(i)] = data.Data[i].data[idx];
+                },
+                link: function ($scope, element) {
+                    $scope.load = function ($scope, element) {
+                        dataItemService.read({
+                            // Need to change this to handle multiple tables on the same page
+                            dataType: "chart",
+                            id: $scope.chartId,
+                            qs: $scope.filterOptions
+                        }, function (data) {
+                            // fire an event before loading chart after data was loaded
+                            $scope.$emit('onStartChartLoad', $scope, data);
+                            $scope.title = data.Title;
+                            $scope.subTitle = data.SubTitle;
+                            $scope.xTitle = data.XTitle;
+                            $scope.yTitle = data.YTitle;
+                            var axises = 'bcdefghijklmnopqrstuvwxyz';
+                            var opt = {
+                                element: element.find('.chart'),
+                                data: data.xAxis.reduce(function (acc, el, idx) {
+                                    var row = { a: el };
+
+                                    for (var i = 0; i < data.Data.length; i++) {
+                                        row[axises.charAt(i)] = data.Data[i].data[idx];
+                                    }
+                                    acc.push(row);
+                                    return acc;
+                                }, []),
+                                barColors: $scope.colorsOptions ? $scope.colorsOptions : ['#00a65a', '#f56954'],
+                                xkey: 'a',
+                                ykeys: axises.substr(0, data.Data.length).split(''),
+                                labels: data.Data.map(function (el) {
+                                    return el.name
+                                }),
+                                horizontal: true,
+                                stacked: true,
+                                hideHover: 'auto',
+                                xLabelAngle: 45
+                            };
+                            // fire an event after loading chart
+                            $scope.$emit('onBeforeChartLoad', $scope, data, opt);
+                            if (!$scope.chart)
+                                $scope.chart = Morris.Bar(opt);
+                            else {
+                                $scope.chart.setData(opt.data);
+                            }
+                            // fire an event after loading chart
+                            $scope.$emit('onAfterChartLoad', $scope, data, opt);
+
+                        });
+                    }
+                    $scope.$watch('filterOptions', function (newVal, oldVal) {
+                        if ($scope.filterOptions && newVal != oldVal) {
+                            $scope.load($scope, element);
+
                         }
-                        acc.push(row);
-                        return acc;
-                      }, []),
-                      barColors: ['#00a65a', '#f56954'],
-                      xkey: 'a',
-                      ykeys: axises.substr(0, data.Data.length).split(''),
-                      labels: data.Data.map(function(el){
-                        return el.name
-                      }),
-                      horizontal: true,
-                      stacked: true,
-                      hideHover: 'auto',
-                      xLabelAngle: 45
-                    };
-                    Morris.Bar(opt);
+                    }, true);
 
-                  });
+                    $scope.load($scope, element);
 
-}
-}
-}])
+                }
+            }
+        }])
 
 /**
 * @ngdoc overview
@@ -2118,63 +2252,87 @@ angular.module('backAnd.directives')
 */
 .directive('splinechart', ['dataItemService',
         function (dataItemService) {
-    /**
-    * @ngdoc directive
-    * @name directive.splinechart
-    * @description display a morris spline chart
-    * @param {string} chartId, required, the id of the chart
-    * @returns {object} directive
-    */
-  return {
-    restrict: 'E',
-    templateUrl: function (elem, attrs) {
-        return attrs.templateUrl || 'backand/js/directives/charts/partials/chart.html'
-    },
-    replace: true,
-    scope: {
-        chartId: '=',
-        filterOptions: '='
-    },
-    link: function($scope, element) {
-      dataItemService.read({
-                    // Need to change this to handle multiple tables on the same page
-                      dataType: "chart",
-                      id: $scope.chartId,
-                      qs: $scope.filterOptions
-                  }, function(data) {
-                    $scope.title = data.Title;
-                    $scope.subTitle = data.SubTitle;
-                    $scope.xTitle = data.XTitle;
-                    $scope.yTitle = data.YTitle;
-                    var axises = 'bcdefghijklmnopqrstuvwxyz';
+            /**
+            * @ngdoc directive
+            * @name directive.splinechart
+            * @description display a morris spline chart
+            * @param {string} chartId, required, the id of the chart
+            * @returns {object} directive
+            */
+            return {
+                restrict: 'E',
+                templateUrl: function (elem, attrs) {
+                    return attrs.templateUrl || 'backand/js/directives/charts/partials/chart.html'
+                },
+                replace: true,
+                scope: {
+                    chartId: '=',
+                    filterOptions: '=',
+                    colorsOptions: '=',
+                    dashboardScope: '='
 
-                    var opt = {
-                      element: element.find('.chart'),
-                      data: data.xAxis.reduce(function(acc, el, idx) {
-                        var row = {a: el};
+                },
+                link: function ($scope, element) {
+                    $scope.load = function ($scope, element) {
+                        dataItemService.read({
+                            // Need to change this to handle multiple tables on the same page
+                            dataType: "chart",
+                            id: $scope.chartId,
+                            qs: $scope.filterOptions
+                        }, function (data) {
+                            // fire an event before loading chart after data was loaded
+                            $scope.$emit('onStartChartLoad', $scope, data);
+                            $scope.title = data.Title;
+                            $scope.subTitle = data.SubTitle;
+                            $scope.xTitle = data.XTitle;
+                            $scope.yTitle = data.YTitle;
+                            var axises = 'bcdefghijklmnopqrstuvwxyz';
 
-                        for (var i=0; i < data.Data.length; i++) {
-                          row[axises.charAt(i)] = data.Data[i].data[idx];
+                            var opt = {
+                                element: element.find('.chart'),
+                                data: data.xAxis.reduce(function (acc, el, idx) {
+                                    var row = { a: el };
+
+                                    for (var i = 0; i < data.Data.length; i++) {
+                                        row[axises.charAt(i)] = data.Data[i].data[idx];
+                                    }
+                                    acc.push(row);
+                                    return acc;
+                                }, []),
+                                lineColors: $scope.colorsOptions ? $scope.colorsOptions : ['#0b62a4', '#7A92A3'],
+                                parseTime: false,
+                                xkey: 'a',
+                                ykeys: axises.substr(0, data.Data.length).split(''),
+                                labels: data.Data.map(function (el) {
+                                    return el.name
+                                }),
+                                hideHover: 'auto',
+                                xLabelAngle: 45
+                            };
+                            // fire an event after loading chart
+                            $scope.$emit('onBeforeChartLoad', $scope, data, opt);
+                            if (!$scope.chart)
+                                $scope.chart = Morris.Line(opt);
+                            else {
+                                $scope.chart.setData(opt.data);
+                            }
+                            // fire an event after loading chart
+                            $scope.$emit('onAfterChartLoad', $scope, data, opt);
+
+                        });
+                    }
+                    $scope.$watch('filterOptions', function (newVal, oldVal) {
+                        if ($scope.filterOptions && newVal != oldVal) {
+                            $scope.load($scope, element);
+
                         }
-                        acc.push(row);
-                        return acc;
-                      }, []),
-                      lineColors: ['#0b62a4', '#7A92A3'],
-                      parseTime: false,
-                      xkey: 'a',
-                      ykeys: axises.substr(0, data.Data.length).split(''),
-                      labels: data.Data.map(function(el){
-                        return el.name
-                      }),
-                      hideHover: 'auto',
-                      xLabelAngle: 45
-                    };
-                    Morris.Line(opt);
-                  });
+                    }, true);
 
-}
-}
-}])
+                    $scope.load($scope, element);
+
+                }
+            }
+        }])
 
 /**
 * @ngdoc overview
@@ -2182,63 +2340,87 @@ angular.module('backAnd.directives')
 */
 .directive('areachart', ['dataItemService',
         function (dataItemService) {
-    /**
-    * @ngdoc directive
-    * @name directive.areachart
-    * @description display a morris area chart
-    * @param {string} chartId, required, the id of the chart
-    * @returns {object} directive
-    */
-  return {
-    restrict: 'E',
-    templateUrl: function (elem, attrs) {
-        return attrs.templateUrl || 'backand/js/directives/charts/partials/chart.html'
-    },
-    replace: true,
-    scope: {
-        chartId: '=',
-        filterOptions: '='
-    },
-    link: function($scope, element) {
-      dataItemService.read({
-                    // Need to change this to handle multiple tables on the same page
-                      dataType: "chart",
-                      id: $scope.chartId,
-                      qs: $scope.filterOptions
-                  }, function(data) {
-                    $scope.title = data.Title;
-                    $scope.subTitle = data.SubTitle;
-                    $scope.xTitle = data.XTitle;
-                    $scope.yTitle = data.YTitle;
-                    var axises = 'bcdefghijklmnopqrstuvwxyz';
+            /**
+            * @ngdoc directive
+            * @name directive.areachart
+            * @description display a morris area chart
+            * @param {string} chartId, required, the id of the chart
+            * @returns {object} directive
+            */
+            return {
+                restrict: 'E',
+                templateUrl: function (elem, attrs) {
+                    return attrs.templateUrl || 'backand/js/directives/charts/partials/chart.html'
+                },
+                replace: true,
+                scope: {
+                    chartId: '=',
+                    filterOptions: '=',
+                    colorsOptions: '=',
+                    dashboardScope: '='
 
-                    var opt = {
-                      element: element.find('.chart'),
-                      data: data.xAxis.reduce(function(acc, el, idx) {
-                        var row = {a: el};
+                },
+                link: function ($scope, element) {
+                    $scope.load = function ($scope, element) {
+                        dataItemService.read({
+                            // Need to change this to handle multiple tables on the same page
+                            dataType: "chart",
+                            id: $scope.chartId,
+                            qs: $scope.filterOptions
+                        }, function (data) {
+                            // fire an event before loading chart after data was loaded
+                            $scope.$emit('onStartChartLoad', $scope, data);
+                            $scope.title = data.Title;
+                            $scope.subTitle = data.SubTitle;
+                            $scope.xTitle = data.XTitle;
+                            $scope.yTitle = data.YTitle;
+                            var axises = 'bcdefghijklmnopqrstuvwxyz';
 
-                        for (var i=0; i < data.Data.length; i++) {
-                          row[axises.charAt(i)] = data.Data[i].data[idx];
+                            var opt = {
+                                element: element.find('.chart'),
+                                data: data.xAxis.reduce(function (acc, el, idx) {
+                                    var row = { a: el };
+
+                                    for (var i = 0; i < data.Data.length; i++) {
+                                        row[axises.charAt(i)] = data.Data[i].data[idx];
+                                    }
+                                    acc.push(row);
+                                    return acc;
+                                }, []),
+                                lineColors: $scope.colorsOptions ? $scope.colorsOptions : ['#0b62a4', '#7A92A3'],
+                                parseTime: false,
+                                xkey: 'a',
+                                ykeys: axises.substr(0, data.Data.length).split(''),
+                                labels: data.Data.map(function (el) {
+                                    return el.name
+                                }),
+                                hideHover: 'auto',
+                                xLabelAngle: 45
+                            };
+                            // fire an event after loading chart
+                            $scope.$emit('onBeforeChartLoad', $scope, data, opt);
+                            if (!$scope.chart)
+                                $scope.chart = Morris.Area(opt);
+                            else {
+                                $scope.chart.setData(opt.data);
+                            }
+                            // fire an event after loading chart
+                            $scope.$emit('onAfterChartLoad', $scope, data, opt);
+
+                        });
+                    }
+                    $scope.$watch('filterOptions', function (newVal, oldVal) {
+                        if ($scope.filterOptions && newVal != oldVal) {
+                            $scope.load($scope, element);
+
                         }
-                        acc.push(row);
-                        return acc;
-                      }, []),
-                      lineColors: ['#0b62a4', '#7A92A3'],
-                      parseTime: false,
-                      xkey: 'a',
-                      ykeys: axises.substr(0, data.Data.length).split(''),
-                      labels: data.Data.map(function(el){
-                        return el.name
-                      }),
-                      hideHover: 'auto',
-                      xLabelAngle: 45
-                    };
-                    Morris.Area(opt);
-                  });
+                    }, true);
 
-}
-}
-}])
+                    $scope.load($scope, element);
+
+                }
+            }
+        }])
 
 /**
 * @ngdoc overview
@@ -2246,65 +2428,89 @@ angular.module('backAnd.directives')
 */
 .directive('bubblechart', ['dataItemService',
         function (dataItemService) {
-    /**
-    * @ngdoc directive
-    * @name directive.bubblechart
-    * @description display a morris bubble chart
-    * @param {string} chartId, required, the id of the chart
-    * @returns {object} directive
-    */
-  return {
-    restrict: 'E',
-    templateUrl: function (elem, attrs) {
-        return attrs.templateUrl || 'backand/js/directives/charts/partials/chart.html'
-    },
-    replace: true,
-    scope: {
-        chartId: '=',
-        filterOptions: '='
-    },
-    link: function($scope, element) {
-      dataItemService.read({
-                    // Need to change this to handle multiple tables on the same page
-                      dataType: "chart",
-                      id: $scope.chartId,
-                      qs: $scope.filterOptions
-                  }, function(data) {
-                    $scope.title = data.Title;
-                    $scope.subTitle = data.SubTitle;
-                    $scope.xTitle = data.XTitle;
-                    $scope.yTitle = data.YTitle;
-                    var axises = 'bcdefghijklmnopqrstuvwxyz';
+            /**
+            * @ngdoc directive
+            * @name directive.bubblechart
+            * @description display a morris bubble chart
+            * @param {string} chartId, required, the id of the chart
+            * @returns {object} directive
+            */
+            return {
+                restrict: 'E',
+                templateUrl: function (elem, attrs) {
+                    return attrs.templateUrl || 'backand/js/directives/charts/partials/chart.html'
+                },
+                replace: true,
+                scope: {
+                    chartId: '=',
+                    filterOptions: '=',
+                    colorsOptions: '=',
+                    dashboardScope: '='
 
-                    var opt = {
-                      element: element.find('.chart'),
-                      data: data.xAxis.reduce(function(acc, el, idx) {
-                        var row = {a: el};
+                },
+                link: function ($scope, element) {
+                    $scope.load = function ($scope, element) {
+                        dataItemService.read({
+                            // Need to change this to handle multiple tables on the same page
+                            dataType: "chart",
+                            id: $scope.chartId,
+                            qs: $scope.filterOptions
+                        }, function (data) {
+                            // fire an event before loading chart after data was loaded
+                            $scope.$emit('onStartChartLoad', $scope, data);
+                            $scope.title = data.Title;
+                            $scope.subTitle = data.SubTitle;
+                            $scope.xTitle = data.XTitle;
+                            $scope.yTitle = data.YTitle;
+                            var axises = 'bcdefghijklmnopqrstuvwxyz';
 
-                        for (var i=0; i < data.Data.length; i++) {
-                          row[axises.charAt(i)] = data.Data[i].data[idx];
+                            var opt = {
+                                element: element.find('.chart'),
+                                data: data.xAxis.reduce(function (acc, el, idx) {
+                                    var row = { a: el };
+
+                                    for (var i = 0; i < data.Data.length; i++) {
+                                        row[axises.charAt(i)] = data.Data[i].data[idx];
+                                    }
+                                    acc.push(row);
+                                    return acc;
+                                }, []),
+                                lineColors: $scope.colorsOptions ? $scope.colorsOptions : ['#0b62a4', '#7A92A3'],
+                                pointSize: 15,
+                                lineWidth: 0,
+                                parseTime: false,
+                                xkey: 'a',
+                                ykeys: axises.substr(0, data.Data.length).split(''),
+                                labels: data.Data.map(function (el) {
+                                    return el.name
+                                }),
+                                hideHover: 'auto',
+                                xLabelAngle: 45
+                            };
+                            // fire an event after loading chart
+                            $scope.$emit('onBeforeChartLoad', $scope, data, opt);
+                            if (!$scope.chart)
+                                $scope.chart = Morris.Line(opt);
+                            else {
+                                $scope.chart.setData(opt.data);
+                            }
+                            // fire an event after loading chart
+                            $scope.$emit('onAfterChartLoad', $scope, data, opt);
+
+                        });
+                    }
+                    $scope.$watch('filterOptions', function (newVal, oldVal) {
+                        if ($scope.filterOptions && newVal != oldVal) {
+                            $scope.load($scope, element);
+
                         }
-                        acc.push(row);
-                        return acc;
-                      }, []),
-                      lineColors: ['#0b62a4', '#7A92A3'],
-                      pointSize : 15,
-                      lineWidth: 0,
-                      parseTime: false,
-                      xkey: 'a',
-                      ykeys: axises.substr(0, data.Data.length).split(''),
-                      labels: data.Data.map(function(el){
-                        return el.name
-                      }),
-                      hideHover: 'auto',
-                      xLabelAngle: 45
-                    };
-                    Morris.Line(opt);
-                  });
+                    }, true);
 
-}
-}
-}])
+                    $scope.load($scope, element);
+
+                }
+            }
+        }])
 ;'use strict';
 
 /**
@@ -2314,7 +2520,6 @@ angular.module('backAnd.directives')
 angular.module('backAnd.directives')
     .directive('bkndForm', ['$sce','$q','$location','$route','configService','dataItemService','dataListService','$log','Global',
         function ($sce, $q, $location, $route, configService, dataItemService, dataListService, $log, Global) {
-
     /**
     * @ngdoc directive
     * @name directive.bkndForm
@@ -3293,6 +3498,7 @@ angular.module('backAnd.directives')
     	    };
     	}],
     	link: function(scope) {
+    	    console.log("autocomplete.js", scope);
 
     	}
     }
@@ -3609,7 +3815,7 @@ angular.module('backAnd.directives')
     	},
     	templateUrl: 'backand/js/directives/numeric/partials/numeric.html',
     	link: function(scope) {
-            //$log.debug("numeric scope", scope);
+            $log.debug("numeric scope", scope);
     		if (!scope.value.val){
 	          scope.value.val = scope.field.defaultValue;
 	        };
@@ -3638,8 +3844,7 @@ angular.module('backAnd.directives')
         },
         templateUrl: 'backand/js/directives/grids/partials/disabledGrid.html'
     }
-}]);
-;'use strict';
+}]);;'use strict';
 /**
 * @ngdoc overview
 * @name directive.image
@@ -3828,19 +4033,19 @@ angular.module('backAnd.directives')
     "\n" +
     " \t\t\t<div class=\"col-xs-{{numCol}}\" ng-switch on=\"chart.type\">\r" +
     "\n" +
-    "                 <barchart chart-id=\"chart.id\" chart-type=\"{{chart.type}}\" ng-switch-when=\"Bar\" filter-options=\"getChartFilterOptions()\">\t</barchart>\t\r" +
+    "                 <barchart chart-id=\"chart.id\" chart-type=\"{{chart.type}}\" ng-switch-when=\"Bar\" filter-options=\"getChartFilterOptions()\" colors-options=\"getColorOptions(chart.type)\"  dashboard-scope=\"this\">\t</barchart>\t\r" +
     "\n" +
-    "                 <linechart chart-id=\"chart.id\" chart-type=\"{{chart.type}}\" ng-switch-when=\"Line\" filter-options=\"getChartFilterOptions()\">  </linechart>\r" +
+    "                 <linechart chart-id=\"chart.id\" chart-type=\"{{chart.type}}\" ng-switch-when=\"Line\" filter-options=\"getChartFilterOptions()\" colors-options=\"getColorOptions(chart.type)\" dashboard-scope=\"this\" >  </linechart>\r" +
     "\n" +
-    "                 <donutchart chart-id=\"chart.id\" chart-type=\"{{chart.type}}\" ng-switch-when=\"Pie\" filter-options=\"getChartFilterOptions()\"> </donutchart>\r" +
+    "                 <donutchart chart-id=\"chart.id\" chart-type=\"{{chart.type}}\" ng-switch-when=\"Pie\" filter-options=\"getChartFilterOptions()\" colors-options=\"getColorOptions(chart.type)\" dashboard-scope=\"this\"> </donutchart>\r" +
     "\n" +
-    "                 <columnchart chart-id=\"chart.id\" chart-type=\"{{chart.type}}\" ng-switch-when=\"Column\" filter-options=\"getChartFilterOptions()\"> </columnchart>\r" +
+    "                 <columnchart chart-id=\"chart.id\" chart-type=\"{{chart.type}}\" ng-switch-when=\"Column\" filter-options=\"getChartFilterOptions()\" colors-options=\"getColorOptions(chart.type)\" dashboard-scope=\"this\"> </columnchart>\r" +
     "\n" +
-    "                 <splinechart chart-id=\"chart.id\" chart-type=\"{{chart.type}}\" ng-switch-when=\"spline\" filter-options=\"getChartFilterOptions()\">  </splinechart>\r" +
+    "                 <splinechart chart-id=\"chart.id\" chart-type=\"{{chart.type}}\" ng-switch-when=\"spline\" filter-options=\"getChartFilterOptions()\" colors-options=\"getColorOptions(chart.type)\" dashboard-scope=\"this\">  </splinechart>\r" +
     "\n" +
-    "                 <areachart chart-id=\"chart.id\" chart-type=\"{{chart.type}}\" ng-switch-when=\"Area\" filter-options=\"getChartFilterOptions()\">  </areachart>\r" +
+    "                 <areachart chart-id=\"chart.id\" chart-type=\"{{chart.type}}\" ng-switch-when=\"Area\" filter-options=\"getChartFilterOptions()\" colors-options=\"getColorOptions(chart.type)\" dashboard-scope=\"this\">  </areachart>\r" +
     "\n" +
-    "                 <bubblechart chart-id=\"chart.id\" chart-type=\"{{chart.type}}\" ng-switch-when=\"bubble\" filter-options=\"getChartFilterOptions()\">  </bubblechart>\r" +
+    "                 <bubblechart chart-id=\"chart.id\" chart-type=\"{{chart.type}}\" ng-switch-when=\"bubble\" filter-options=\"getChartFilterOptions()\" colors-options=\"getColorOptions(chart.type)\" dashboard-scope=\"this\">  </bubblechart>\r" +
     "\n" +
     " \t\t\t</div>\r" +
     "\n" +
@@ -4029,7 +4234,7 @@ angular.module('backAnd.directives')
     "\n" +
     "                <div class=\"=col-md-10 text-left\">\r" +
     "\n" +
-    "                    <alert ng-repeat=\"alert in alerts\" type=\"{{alert.type}}\" close=\"closeAlert($index)\"><span>{{alert.msg}}</span></alert>\r" +
+    "                    <alert ng-repeat=\"alert in alerts\" type=\"{{alert.type}}\" close=\"closeAlert($index)\"><span ng-bind-html=\"alert.msg\"></span></alert>\r" +
     "\n" +
     "                </div>\r" +
     "\n" +
@@ -4103,8 +4308,7 @@ angular.module('backAnd.directives')
     "\n" +
     "    </div>\r" +
     "\n" +
-    "</script>\r" +
-    "\n"
+    "</script>"
   );
 
 
@@ -4167,7 +4371,7 @@ angular.module('backAnd.directives')
     "\n" +
     "                                <select ng-switch-when=\"relation\" name=\"item.fieldName\" ng-model=\"item.value\" ng-change=\"filterChanged()\" class=\"form-control filter-item\">\r" +
     "\n" +
-    "                                    <option ng-repeat=\"option in item.selectOptions\" value=\"{{option.value}}\">\r" +
+    "                                    <option ng-repeat=\"option in item.selectOptions\" value=\"{{option.value}}\" ng-selected=\"item.value == option.value\">\r" +
     "\n" +
     "                                        {{option.name}}\r" +
     "\n" +
@@ -4187,7 +4391,7 @@ angular.module('backAnd.directives')
     "\n" +
     "                                        {{\r" +
     "\n" +
-    "                                        getOperatorSymbol(item.operator)\r" +
+    "                                            getOperatorSymbol(item.operator)\r" +
     "\n" +
     "                                        }}\r" +
     "\n" +
@@ -4295,42 +4499,25 @@ angular.module('backAnd.directives')
   $templateCache.put('backand/js/directives/grids/partials/grid-mobile.html',
     "<div class=\"ng-back-grid box\" id=\"bknd-grid_{{viewNameId}}\">\r" +
     "\n" +
-    "    <div class=\"box-body table-responsive\">\r" +
+    "    <div class=\"btn-group btn-group-sm\" ng-show=\"showToolbar\">\r" +
     "\n" +
-    "        <div class=\"btn-group btn-group-sm\" ng-show=\"showToolbar\">\r" +
+    "        <button type=\"button\" ng-click=\"addRow()\" ng-show=\"showAdd\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-plus\"></span></button>\r" +
     "\n" +
-    "            <button type=\"button\" ng-click=\"addRow()\" ng-show=\"showAdd\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-plus\"></span></button>\r" +
+    "        <button type=\"button\" ng-click=\"editSelected()\" ng-show=\"showEdit\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-pencil\"></span></button>\r" +
     "\n" +
-    "            <button type=\"button\" ng-click=\"editSelected()\" ng-show=\"showEdit\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-pencil\"></span></button>\r" +
-    "\n" +
-    "            <button type=\"button\" ng-click=\"deleteSelected()\" ng-show=\"showDelete\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-trash\"></span></button>\r" +
-    "\n" +
-    "        </div>\r" +
-    "\n" +
-    "        <div class=\"btn-group btn-group-sm\">\r" +
-    "\n" +
-    "            <button type=\"button\" ng-click=\"activateFilter()\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-refresh\"></span></button>\r" +
-    "\n" +
-    "            <img ng-show=\"isLoad\" src=\"backand/img/ajax-loader.gif\" style=\"height:30px;margin-top:8px;\" />\r" +
-    "\n" +
-    "        </div>\r" +
-    "\n" +
-    "        <div class=\"btn-group-sm pull-right\">\r" +
-    "\n" +
-    "            <button type=\"button\" ng-click=\"collapseFilter=!collapseFilter\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon \" ng-class=\"collapseFilter ? 'glyphicon-chevron-down' : 'glyphicon-chevron-up'\"><span class=\"grid-toolbar-text\">{{collapseFilter ? \"Filter\" : \"Filter\"}}</span></span></button>\r" +
-    "\n" +
-    "        </div>\r" +
+    "        <button type=\"button\" ng-click=\"deleteSelected()\" ng-show=\"showDelete\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-trash\"></span></button>\r" +
     "\n" +
     "    </div>\r" +
     "\n" +
-    "    <div ng-show=\"showFilter && !collapseFilter\" class=\"grid-filter\">\r" +
+    "    <div class=\"btn-group btn-group-sm\">\r" +
     "\n" +
-    "        <div bknd-filter filter-options=\"filterToolbarOptions\" show-operators=\"true\"></div>\r" +
+    "        <button type=\"button\" ng-click=\"activateFilter()\" class=\"btn btn-default navbar-btn\"><span class=\"glyphicon glyphicon-refresh\"></span></button>\r" +
+    "\n" +
+    "        <img ng-show=\"isLoad\" src=\"backand/img/ajax-loader.gif\" style=\"height:30px;margin-top:8px;\" />\r" +
     "\n" +
     "    </div>\r" +
     "\n" +
-    "</div>\r" +
-    "\n"
+    "</div>"
   );
 
 

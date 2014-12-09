@@ -34,7 +34,7 @@ background-color: #333333;
     color: #0db74a;
 }
 .skin-blue .user-panel > .image > img {
-    border: 0px   ; *
+    border: 0px   ; 
 }
 .skin-blue .user-panel > .info,
 .skin-blue .user-panel > .info > a {
@@ -103,4 +103,44 @@ border: 0;
 {
     background: #333;
     color: #7b7b7b;
+}
+.main-dash-chart-container{
+    position:relative;
+}
+.chart-sum{
+    position: absolute;
+top: 0px;
+width: 200px;
+height: 80px;
+left: 70% /*550px*/;
+z-index: 1;
+background-color:#ffffff;
+color:#4c4c4c;
+}
+
+.chart-sum fieldset{
+    padding:5px;
+    text-align:center;
+    
+}
+.chart-sum fieldset legend{
+    margin-bottom:5px;
+    
+}
+
+.chart-sum fieldset h3{
+    margin-top:0px;
+    
+}
+.dashboard-grid{
+    height:340px;
+}
+.dashboard-sum {
+    width: 150px;
+    margin: auto;
+    background-color:#ffffff;
+color:#4c4c4c;
+-moz-border-radius: 50px;
+border-radius: 50px;
+padding:0 10px;
 }

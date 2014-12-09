@@ -26,6 +26,9 @@ angular.module('backAnd.directives')
             scope.$watch('filterOptions', function () {
                 if (scope.filterOptions) {
                     scope.filterOptionsOutput = angular.copy(scope.filterOptions);
+                    // if there are default values then emit the filter in the first time
+                    if (scope.getFilter().length > 0)
+                        scope.$emit('onfilter', scope.getFilter(), scope);
                 }
             }, true);
 
@@ -38,7 +41,7 @@ angular.module('backAnd.directives')
             scope.getFilter = function () {
                 var filter = [];
                 angular.forEach(scope.filterOptionsOutput, function (option) {
-                    if (option.value) {
+                    if (option.value || option.operator == 'empty' || option.operator == 'notEmpty') {
                         filter.push({ "fieldName": option.fieldName, "operator": option.operator, "value": option.value });
                     }
                 });

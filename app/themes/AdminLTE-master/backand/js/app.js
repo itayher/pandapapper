@@ -40,9 +40,9 @@ angular.module('backAnd', [
                  templateUrl: 'themes/AdminLTE-master/my-pages/mainDashboard/mainDashboard.html'
              })
 
-            .when('/cohort', {
-                templateUrl: 'themes/AdminLTE-master/my-pages/cohort/cohort.html'
-            })
+            //.when('/demoDashboard', {
+            //    templateUrl: 'themes/AdminLTE-master/my-pages/demoDashboard/demoDashboard.html'
+            //})
 
             .when('/login', {
                 templateUrl: 'themes/AdminLTE-master/backand/partials/login/login.html'

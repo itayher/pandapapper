@@ -18,6 +18,7 @@ angular.module('backAnd.controllers')
                 // add the new one
                 //data.workspace.pages.splice(1, 0, { name: "cohort", partType: "dashboard" });
                 data.workspace.pages.splice(1, 0, { name: "mainDashboard", partType: "dashboard" });
+               
             }
         })
 
@@ -26,10 +27,11 @@ angular.module('backAnd.controllers')
             /*  this example navigates to page1 see the routines at \themes\AdminLTE-master\backand\js\app.js */
             if (data.name == 'mainDashboard')
                 $location.path("/mainDashboard");
-            //if (data.name == 'cohort')
-            //    $location.path("/cohort");
+            //if (data.name == 'demoDashboard')
+            //    $location.path("/demoDashboard");
 
             
         })
+        
     }
 ])

@@ -1,3 +1,4 @@
+
 <section class="content-header">
     <h1>
         Main Dashboard
@@ -7,29 +8,86 @@
     </ol>
 </section>
 <section class="content" data-ng-controller="mainDashboardController">
+
+    <div style="float:right;margin:0px">
+        <button class="btn btn-default" ng-click="updateFilterObject(7)">7 days</button>
+        <button class="btn btn-default" ng-click="updateFilterObject(10)">10 days</button>
+        <button class="btn btn-default" ng-click="updateFilterObject(30)">last month</button>
+        <button class="btn btn-default" ng-click="updateFilterObject(365)">last year</button>
+    </div>
     <div>Additional filter options:</div>
     <div ng-show="showFilter" class="grid-filter">
-        <div bknd-filter filter-options="filterOptionsInput" show-operators="false"></div>
+
+        <div bknd-filter filter-options="filterOptionsInput" show-operators="false">
+
+            
+        </div>
+    </div>
+    <center >
+        <div class="box dashboard-sum">
+                <h4>Active Users</h4>
+                <h3>{{X70}}</h3>
+           
+        </center>
+    </center>
+
+
+
+   
+
+    <!--<bknd-dashboard dashboard-id="2" filter-options="filterOptions" ></bknd-dashboard>-->
+
+    <div class="col-xs-6">
+        <div class="main-dash-chart-container">
+            <div class="box chart-sum">
+                <fieldset>
+                    <legend>Total Installs:</legend>
+                    <h3>{{C3}}</h3>
+                </fieldset>
+            </div>
+            <linechart chart-id="3" chart-type="Line" class="box" colors-options="['#0db74a']" filter-options="getChartFilterOptions()">  </linechart>
+
+        </div>
+        <div class="main-dash-chart-container">
+            <div class="box chart-sum">
+                <fieldset>
+                    <legend>Cost Per Install:</legend>
+                    <h3>{{C21}}</h3>
+                </fieldset>
+            </div>
+            <linechart chart-id="21" chart-type="Line" class="box" colors-options="['#0db74a']" filter-options="getChartFilterOptions()">  </linechart>
+
+
+        </div>
+        <div class="main-dash-chart-container">
+            <div class="box chart-sum">
+                <fieldset>
+                    <legend>Total Installs:</legend>
+                    <h3>{{C23}}</h3>
+                </fieldset>
+            </div>
+            <linechart chart-id="23" chart-type="Line" class="box" colors-options="['#0db74a']" filter-options="getChartFilterOptions()">  </linechart>
+
+        </div>
+
+        <!--<bknd-ng-grid view-name="'events'" class="dashboard-grid" input-style="{'height': 300}"></bknd-ng-grid>-->
+    </div>
+
+    <div class="col-xs-6">
+        <!--<div class="main-dash-chart-container">
+            <div class="box chart-sum">
+                <fieldset>
+                    <legend>Total Installs:</legend>
+                    <h3>{{C23}}</h3>
+                </fieldset>
+            </div>
+            <linechart chart-id="72" chart-type="Line" class="box" filter-options="getChartFilterOptions()">  </linechart>
+
+        </div>-->
+        <!--<bknd-ng-grid view-name="'deviceappsettings'" class="dashboard-grid"  input-style="{'height': 300}"></bknd-ng-grid>-->
     </div>
 
 
-    <!--<div class="panel panel-default">-->
-        <!--<div class="panel-body">-->
-            <!--<div class="row">-->
-                <!--<div class="col-md-2 form-group">-->
-                    <!--<label>Device:</label>-->
-                    <!--<div>-->
-                        <!--IOS <input type="checkbox" name="device" value=ios" class="form-control filter-item">-->
-                    <!--</div>-->
-                    <!--<div>-->
-                        <!--Android <input type="checkbox" name="device" value=android" class="form-control filter-item" />-->
-                    <!--</div>-->
-                <!--</div>-->
-            <!--</div>-->
-        <!--</div>-->
-    <!--</div>-->
-    <br/>
-    <br/>
-    <bknd-dashboard dashboard-id="1" filter-options="filterOptions" ></bknd-dashboard>
+
 
 </section>
